@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}About Us · Dermacare Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>About <em style="font-style: italic; color: var(--gold);">Dermacare</em>.</h1>
+      <p class="subtitle">Modern medicine, delivered with care since 2026.</p>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-3">
+    <div class="card">
+      <h3>Our Story</h3>
+      <p class="text-muted mt-2">
+        Dermacare Clinic was founded with one simple mission: to make quality healthcare
+        accessible, transparent, and genuinely personal. We bring together experienced
+        specialists, modern facilities, and a digital platform that lets you book,
+        consult, and manage your health from anywhere.
+      </p>
+      <p class="text-muted mt-2">
+        From dermatology and general medicine to pediatrics and cosmetic care,
+        every patient receives the same standard of attention — unhurried, evidence-based,
+        and tailored to their needs.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Our Mission</h3>
+      <p class="text-muted mt-2">
+        To raise the standard of medical care in our community by combining
+        clinical excellence with a warm, considered patient experience.
+      </p>
+      <h3 class="mt-4">Our Values</h3>
+      <ul class="text-muted mt-2" style="padding-left: 1.25rem;">
+        <li><strong>Trust</strong> — transparent pricing, honest advice.</li>
+        <li><strong>Care</strong> — generous consultation time for every patient.</li>
+        <li><strong>Excellence</strong> — board-certified specialists across all departments.</li>
+        <li><strong>Innovation</strong> — digital records, online booking, in-house pharmacy.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="grid-4 mt-4">
+    <div class="stat-card">
+      <div class="stat-label">Established</div>
+      <div class="stat-value">2026</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Specialists</div>
+      <div class="stat-value">12+</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Patients served</div>
+      <div class="stat-value">5K+</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Satisfaction rate</div>
+      <div class="stat-value">98%</div>
+    </div>
+  </div>
+
+  <div class="card mt-4 text-center" style="padding: 3rem;">
+    <h2>Ready to experience better care?</h2>
+    <p class="text-muted mt-2 mb-3">Book your first consultation in under a minute.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Get started →</a>
+  </div>
+</div>
+{% endblock %}

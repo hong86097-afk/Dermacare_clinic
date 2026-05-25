@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Medicines · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Medicines</h1>
+      <p class="subtitle">Inventory and pricing.</p>
+    </div>
+    {% if session.role in ['Pharmacist', 'Admin'] %}
+    <a href="{{ url_for('add_medicine') }}" class="btn btn-primary">+ Add medicine</a>
+    {% endif %}
+  </div>
+
+  {% if medicines %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Description</th>
+          {% if session.role in ['Pharmacist', 'Admin'] %}<th></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in medicines %}
+        <tr>
+          <td class="text-muted">#{{ m.medicineID }}</td>
+          <td><strong>{{ m.medicineName }}</strong></td>
+          <td class="text-muted">{{ m.category or '—' }}</td>
+          <td>${{ '%.2f'|format(m.price or 0) }}</td>
+          <td>
+            {% if m.stock < 20 %}
+              <span style="color: var(--warning); font-weight: 600;">{{ m.stock }}</span>
+            {% else %}
+              {{ m.stock }}
+            {% endif %}
+          </td>
+          <td class="text-muted" style="font-size: .85rem;">{{ m.description or '—' }}</td>
+          {% if session.role in ['Pharmacist', 'Admin'] %}
+          <td>
+            <a href="{{ url_for('delete_medicine', mid=m.medicineID) }}"
+               class="btn btn-ghost btn-sm"
+               onclick="return confirm('Delete this medicine?')">Delete</a>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty card">
+    <h3>No medicines yet</h3>
+    {% if session.role in ['Pharmacist', 'Admin'] %}
+    <a href="{{ url_for('add_medicine') }}" class="btn btn-primary mt-3">Add the first medicine</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

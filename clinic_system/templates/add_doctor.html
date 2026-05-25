@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Add Doctor · Admin{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card" style="max-width: 560px;">
+    <h1>Add a doctor</h1>
+    <p class="auth-subtitle">Create a doctor account. They can log in with these credentials.</p>
+
+    <form method="POST" action="{{ url_for('add_doctor') }}">
+      
+      <!-- Full name -->
+      <div class="form-group">
+        <label for="full_name">Full name</label>
+        <input type="text" id="full_name" name="full_name" class="form-control" required minlength="3">
+      </div>
+
+      <!-- Username + Password -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" class="form-control" required minlength="5">
+        </div>
+        <div class="form-group">
+  <label for="password">Temporary password</label>
+  <input type="password" id="password" name="password" class="form-control" required minlength="6">
+  <label class="show-password-label">
+    <input type="checkbox" id="showPassword"> Show password
+  </label>
+</div>
+      </div>
+
+      <!-- Email + Phone -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="text" id="phone" name="phone" class="form-control" required minlength="9" maxlength="15">
+        </div>
+      </div>
+
+      <!-- Specialization + Fee -->
+      <div class="form-row">
+        <div class="form-group">
+          <label for="specialization">Specialization</label>
+          <select id="specialization" name="specialization" class="form-control">
+            {% for s in specializations %}
+            <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="consultationFee">Consultation fee ($)</label>
+          <input type="number" step="0.01" id="consultationFee" name="consultationFee" class="form-control" value="50.00">
+        </div>
+      </div>
+
+      <!-- Optional fields -->
+      <div class="form-group">
+        <label for="photo_url">Photo path (optional)</label>
+        <input type="text" id="photo_url" name="photo_url" class="form-control" placeholder="/static/image/doc1.jpg">
+      </div>
+
+      <div class="form-group">
+        <label for="telegram">Telegram link (optional)</label>
+        <input type="text" id="telegram" name="telegram" class="form-control" placeholder="https://t.me/username">
+      </div>
+
+      <div class="form-group">
+        <label for="facebook">Facebook link (optional)</label>
+        <input type="text" id="facebook" name="facebook" class="form-control" placeholder="https://facebook.com/username">
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Create doctor account</button>
+    </form>
+  </div>
+</div>
+
+<script>
+  const passwordField = document.getElementById("password");
+  const toggle = document.getElementById("showPassword");
+
+  toggle.addEventListener("change", function () {
+    if (this.checked) {
+      passwordField.type = "text";   // show password
+    } else {
+      passwordField.type = "password"; // hide password
+    }
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Add Medicine · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container-narrow">
+  <div class="page-header" style="border: none;">
+    <div>
+      <h1>Add a medicine.</h1>
+      <p class="subtitle">Register a new product to the pharmacy inventory.</p>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form method="POST" action="{{ url_for('add_medicine') }}">
+      <div class="form-group">
+        <label for="medicineName">Medicine name</label>
+        <input type="text" id="medicineName" name="medicineName" class="form-control" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="category">Category</label>
+          <input type="text" id="category" name="category" class="form-control" placeholder="e.g. Antibiotic">
+        </div>
+        <div class="form-group">
+          <label for="price">Price (USD)</label>
+          <input type="number" id="price" name="price" class="form-control" step="0.01" min="0" value="0.00">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="stock">Stock quantity</label>
+        <input type="number" id="stock" name="stock" class="form-control" min="0" value="0">
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" class="form-control" placeholder="Usage notes, dosage info, etc."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Add medicine →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

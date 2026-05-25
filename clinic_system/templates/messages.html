@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Messages · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Contact messages.</h1>
+      <p class="subtitle">Messages received from the website contact form.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    {% if messages %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Subject</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for msg in messages %}
+            <tr>
+              <td>{{ msg.createdAt }}</td>
+              <td>{{ msg.name }}</td>
+              <td>{{ msg.email }}</td>
+              <td>{{ msg.phone or '-' }}</td>
+              <td>{{ msg.subject }}</td>
+              <td>{{ msg.message }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted">No messages have been submitted yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

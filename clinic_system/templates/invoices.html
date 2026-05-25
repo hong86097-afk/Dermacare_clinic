@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Invoices · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Invoices</h1>
+      <p class="subtitle">
+        {% if session.role == 'Patient' %}Your billing history.
+        {% else %}All clinic invoices.{% endif %}
+      </p>
+    </div>
+  </div>
+
+  {% if invoices %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Invoice #</th>
+          <th>Issued</th>
+          <th>Appointment date</th>
+          {% if session.role != 'Patient' %}<th>Patient</th>{% endif %}
+          {% if session.role != 'Doctor' %}<th>Doctor</th>{% endif %}
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in invoices %}
+        <tr>
+          <td class="text-muted">#{{ i.invoiceID }}</td>
+          <td>{{ i.issuedAt.strftime('%b %d, %Y') }}</td>
+          <td>{{ i.appointmentDate.strftime('%b %d, %Y') }}</td>
+          {% if session.role != 'Patient' %}<td>{{ i.patientName }}</td>{% endif %}
+          {% if session.role != 'Doctor' %}<td>{{ i.doctorName }}</td>{% endif %}
+          <td><strong>${{ '%.2f'|format(i.amount) }}</strong></td>
+          <td><span class="badge badge-{{ i.paymentStatus|lower }}">{{ i.paymentStatus }}</span></td>
+          <td>
+            {% if i.paymentStatus == 'Pending' %}
+              {% if session.role == 'Patient' %}
+                <a href="{{ url_for('pay_invoice', iid=i.invoiceID) }}" class="btn btn-success btn-sm">Pay now</a>
+              {% elif session.role in ['Admin', 'Pharmacist'] %}
+                <a href="{{ url_for('pay_invoice', iid=i.invoiceID) }}" class="btn btn-success btn-sm">Mark paid</a>
+                <a href="{{ url_for('cancel_invoice', iid=i.invoiceID) }}" class="btn btn-ghost btn-sm">Cancel</a>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty card">
+    <h3>No invoices yet</h3>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

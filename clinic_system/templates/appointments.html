@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Appointments · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Appointments</h1>
+      <p class="subtitle">
+        {% if session.role == 'Patient' %}Your scheduled and past visits.
+        {% elif session.role == 'Doctor' %}Your patient schedule.
+        {% else %}All appointments across the clinic.{% endif %}
+      </p>
+    </div>
+    {% if session.role == 'Patient' %}
+    <a href="{{ url_for('book_appointment') }}" class="btn btn-primary">+ Book appointment</a>
+    {% endif %}
+  </div>
+
+  {% if appointments %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          {% if session.role != 'Patient' %}<th>Patient</th>{% endif %}
+          {% if session.role != 'Doctor' %}<th>Doctor</th>{% endif %}
+          <th>Specialization</th>
+          <th>Reason</th>
+          <th>Status</th>
+          {% if session.role in ['Doctor', 'Admin'] %}<th>Action</th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in appointments %}
+        <tr>
+          <td class="text-muted">#{{ a.appointmentID }}</td>
+          <td><strong>{{ a.appointmentDate.strftime('%b %d, %Y') }}</strong><br><small class="text-muted">{{ a.appointmentDate.strftime('%H:%M') }}</small></td>
+          {% if session.role != 'Patient' %}<td>{{ a.patientName }}</td>{% endif %}
+          {% if session.role != 'Doctor' %}<td>{{ a.doctorName }}</td>{% endif %}
+          <td class="text-muted">{{ a.specialization }}</td>
+          <td class="text-muted">{{ a.reason or '—' }}</td>
+          <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
+          {% if session.role in ['Doctor', 'Admin'] %}
+          <td>
+            {% if a.status == 'Scheduled' %}
+              <a href="{{ url_for('update_appointment_status', aid=a.appointmentID, new_status='Completed') }}" class="btn btn-success btn-sm">Complete</a>
+              <a href="{{ url_for('update_appointment_status', aid=a.appointmentID, new_status='Cancelled') }}" class="btn btn-ghost btn-sm">Cancel</a>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty card">
+    <h3>No appointments to show</h3>
+    {% if session.role == 'Patient' %}
+    <p>Book your first appointment to get started.</p>
+    <a href="{{ url_for('book_appointment') }}" class="btn btn-primary mt-3">Book now</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

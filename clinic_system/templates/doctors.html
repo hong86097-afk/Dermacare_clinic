@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Our Doctors · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <div class="section-eyebrow">Our Specialists</div>
+      <h1>The team caring for you.</h1>
+      <p class="subtitle">Board-certified clinicians across multiple specialties.</p>
+    </div>
+  </div>
+
+  {% if doctors %}
+  <div class="doctor-scroll">
+    {% for doc in doctors %}
+    <div class="doctor-card" onclick="toggleCard(this)">
+
+      {% if doc.photo_url %}
+        <img src="{{ doc.photo_url }}" alt="{{ doc.doctorName }}" class="doc-photo">
+      {% else %}
+        <div class="doc-avatar">{{ doc.doctorName[:1] }}</div>
+      {% endif %}
+
+      <!-- Always-visible name + specialization -->
+      <div class="card-caption">
+        <span class="doc-spec">{{ doc.specialization }}</span>
+        <h3>{{ doc.doctorName }}</h3>
+        <p class="doc-fee">From <strong>${{ '%.2f'|format(doc.consultationFee or 0) }}</strong></p>
+      </div>
+
+      <!-- Hidden panel that slides up over the photo on click -->
+      <div class="card-consult" onclick="event.stopPropagation()">
+        <p class="consult-title">Consult {{ doc.doctorName }}</p>
+
+        {% if session.role == 'Patient' %}
+        <a class="consult-link primary"
+           href="{{ url_for('book_appointment', doctor_id=doc.doctorID) }}">
+          <span class="ico">&#128197;</span> Book an appointment
+        </a>
+        {% endif %}
+
+        <div class="consult-wrap">
+  <a class="consult-link" href="mailto:hong86097@gmail.com?subject=Consultation%20Request">
+    <span class="ico">&#9993;</span> Email
+  </a>
+  <a class="consult-link" target="_blank" rel="noopener"
+     href="https://t.me/smilling90">
+    <span class="ico">&#128172;</span> Telegram
+  </a>
+  <a class="consult-link" target="_blank" rel="noopener"
+     href="https://www.facebook.com/me/">
+    <span class="ico">&#128247;</span> Facebook
+  </a>
+</div>
+
+      </div>
+
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty card">
+    <h3>No doctors yet</h3>
+  </div>
+  {% endif %}
+</div>
+ 
+<!-- =====================================================
+     OUR PHARMACISTS — photo + name only (no contact)
+     ===================================================== -->
+<section class="pharma-section">
+  <div class="pharma-inner">
+    <div class="hc-eyebrow">Our Pharmacy Team</div>
+    <h2 class="hc-about-title">The pharmacists behind your care.</h2>
+ 
+    {% if pharmacists %}
+    <div class="pharma-scroll">
+      {% for pha in pharmacists %}
+      <div class="pharma-card">
+        {% if pha.photo_url %}
+          <img src="{{ pha.photo_url }}" alt="{{ pha.pharmacistName }}" class="pharma-photo">
+        {% else %}
+          <div class="pharma-avatar">{{ pha.pharmacistName[:1] }}</div>
+        {% endif %}
+        <div class="pharma-caption">
+          <span class="pharma-role">Pharmacist</span>
+          <h3>{{ pha.pharmacistName }}</h3>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">No pharmacists to show yet.</p>
+    {% endif %}
+  </div>
+</section>
+ 
+<script>
+  function toggleCard(card) {
+    document.querySelectorAll('.doctor-card.active').forEach(c => {
+      if (c !== card) c.classList.remove('active');
+    });
+    card.classList.toggle('active');
+  }
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.doctor-card')) {
+      document.querySelectorAll('.doctor-card.active').forEach(c => c.classList.remove('active'));
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Page not found · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div style="text-align: center;">
+    <div style="font-family: 'Fraunces', serif; font-size: 8rem; font-style: italic; color: var(--accent); line-height: 1;">404</div>
+    <h2 class="mt-3">This page doesn't exist.</h2>
+    <p class="text-muted mt-2">The page you were looking for has moved or never existed.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary mt-3">← Back home</a>
+  </div>
+</div>
+{% endblock %}

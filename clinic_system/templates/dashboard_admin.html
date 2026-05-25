@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Clinic overview.</h1>
+      <p class="subtitle">Operational summary for {{ session.username }}.</p>
+    </div>
+  </div>
+
+  <div class="grid-4 mb-3">
+    <div class="stat-card">
+      <div class="stat-icon">⚕</div>
+      <div class="stat-label">Doctors</div>
+      <div class="stat-value">{{ stats.doctors if stats is defined else 0 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">♥</div>
+      <div class="stat-label">Patients</div>
+      <div class="stat-value">{{ stats.patients if stats is defined else 0 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">●</div>
+      <div class="stat-label">Appointments</div>
+      <div class="stat-value">{{ stats.appointments if stats is defined else 0 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">$</div>
+      <div class="stat-label">Total revenue</div>
+      <div class="stat-value">${{ '%.0f'|format(stats.revenue if stats is defined and stats.revenue else 0) }}</div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h3>Manage staff</h3>
+    <p class="text-muted mt-2">Create login accounts for doctors and pharmacists. They cannot register themselves.</p>
+    <div class="d-flex gap-2 flex-wrap mt-3">
+      <a href="{{ url_for('add_doctor') }}" class="btn btn-primary">+ Add Doctor</a>
+      <a href="{{ url_for('add_pharmacist') }}" class="btn btn-outline">+ Add Pharmacist</a>
+    </div>
+  </div>
+
+  <div class="grid-3 mt-4">
+    <div class="card">
+      <h3>Appointments</h3>
+      <p class="text-muted mt-2">Review all bookings across doctors and update statuses.</p>
+      <a href="{{ url_for('appointments') }}" class="btn btn-outline mt-3">Manage →</a>
+    </div>
+    <div class="card">
+      <h3>Messages</h3>
+      <p class="text-muted mt-2">See patient messages submitted via the contact form.</p>
+      <a href="{{ url_for('messages') }}" class="btn btn-outline mt-3">Review →</a>
+    </div>
+    <div class="card">
+      <h3>Medicines</h3>
+      <p class="text-muted mt-2">Manage inventory and pricing.</p>
+      <a href="{{ url_for('medicines') }}" class="btn btn-outline mt-3">Manage →</a>
+    </div>
+    <div class="card">
+      <h3>Invoices</h3>
+      <p class="text-muted mt-2">Track payments, mark paid, cancel as needed.</p>
+      <a href="{{ url_for('invoices') }}" class="btn btn-outline mt-3">Manage →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

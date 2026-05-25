@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Contact Us · Dermacare Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Get in <em style="font-style: italic; color: var(--gold);">touch</em>.</h1>
+      <p class="subtitle">We're here to answer your questions and schedule your visit.</p>
+    </div>
+  </div>
+
+  <div class="grid-2 mb-3">
+    <!-- LEFT: Contact details -->
+    <div>
+      <div class="card mb-3">
+        <h3>Visit us</h3>
+        <p class="text-muted mt-2" style="line-height: 1.7;">
+          <strong style="color: var(--ink); font-size: 1.05rem;">Dermacare Clinic</strong><br>
+          Russian Federation Blvd (110)<br>
+          Phnom Penh, Cambodia 120404
+          <div class="map-container" style="margin-top: 1rem;">
+  <iframe
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3905.049708373734!2d104.888!3d11.568!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3109512e0f1f0a8f%3A0x7b3f0f0d7b0b9f7!2sInstitute%20of%20Technology%20of%20Cambodia!5e0!3m2!1sen!2skh!4v1680000000000!5m2!1sen!2skh"
+    width="100%"
+    height="400"
+    style="border:0;"
+    allowfullscreen=""
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade">
+  </iframe>
+</div>
+        </p>
+      </div>
+
+      <div class="card mb-3">
+        <h3>Call us</h3>
+        <p class="text-muted mt-2" style="line-height: 1.8;">
+          <strong style="color: var(--accent); font-size: 1.3rem; font-family: var(--font-display);">
+            +855 95 535 582
+          </strong><br>
+          <span style="font-size: 0.9rem;">Reception · Mon–Sun · 8:00–22:00</span>
+        </p>
+      </div>
+
+      <div class="card mb-3">
+        <h3>Email us</h3>
+        <p class="text-muted mt-2">
+          <a href="mailto:care@dermacare-clinic.com" style="color: var(--accent); font-weight: 500;">
+            care@dermacare-clinic.com
+          </a><br>
+          <span style="font-size: 0.9rem;">Replies within 24 hours</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- RIGHT: Contact form -->
+    <div>
+      <div class="form-card">
+        <h3>Send us a message</h3>
+        <p class="text-muted mt-2 mb-3" style="font-size: 0.9rem;">
+          Fill in the form below and we'll get back to you shortly.
+        </p>
+
+        <form method="POST" action="{{ url_for('contact') }}">
+          <div class="form-group">
+            <label for="name">Your name</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone</label>
+              <input type="text" id="phone" name="phone" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <select id="subject" name="subject" class="form-control">
+              <option>General enquiry</option>
+              <option>Appointment booking</option>
+              <option>Billing question</option>
+              <option>Feedback</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" class="form-control" rows="5"
+                      placeholder="How can we help you?" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Send message →</button>
+        </form>
+      </div>
+
+     <div class="form-group mb-4 mt-4 opening-hours">
+  <h3 class="mb-3">Opening hours</h3>
+  <div class="hours-list">
+    <div class="hours-row mb-2">
+      <span class="day">Monday – Friday</span>
+      <span class="time">8:00AM – 22:00PM</span>
+    </div>
+    <div class="hours-row mb-2">
+      <span class="day">Saturday – Sunday</span>
+      <span class="time">9:00AM – 17:00PM</span>
+    </div>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+ 
+{% endblock %}

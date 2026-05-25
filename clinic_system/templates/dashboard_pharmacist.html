@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Pharmacist Dashboard · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Pharmacy overview.</h1>
+      <p class="subtitle">Inventory, prescriptions, and stock at a glance.</p>
+    </div>
+    <a href="{{ url_for('add_medicine') }}" class="btn btn-primary btn-lg">+ Add medicine</a>
+  </div>
+
+  <div class="grid-3 mb-3">
+    <div class="stat-card">
+      <div class="stat-icon">℞</div>
+      <div class="stat-label">Medicines in stock</div>
+      <div class="stat-value">{{ stats.medicines }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">▦</div>
+      <div class="stat-label">Total prescriptions</div>
+      <div class="stat-value">{{ stats.prescriptions }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">!</div>
+      <div class="stat-label">Low stock items</div>
+      <div class="stat-value" style="color: {% if stats.low_stock > 0 %}var(--warning){% endif %};">{{ stats.low_stock }}</div>
+    </div>
+  </div>
+
+  <div class="d-flex justify-between align-center mb-2">
+    <h2>Recent prescriptions</h2>
+    <a href="{{ url_for('prescriptions') }}" class="btn btn-ghost btn-sm">View all →</a>
+  </div>
+
+  {% if recent %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Patient</th>
+          <th>Medicine</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in recent %}
+        <tr>
+          <td>{{ p.createdAt.strftime('%b %d, %Y') }}</td>
+          <td>{{ p.patientName }}</td>
+          <td>{{ p.medicineName }}</td>
+          <td>{{ p.quantity }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty card">
+    <h3>No prescriptions yet</h3>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

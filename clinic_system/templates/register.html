@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Register · Dermacare Clinic{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card" style="max-width: 560px;">
+    <h1>Create an account.</h1>
+    <p class="auth-subtitle">Join Dermacare Medical Clinic — it only takes a minute.</p>
+
+    <form method="POST" action="{{ url_for('register') }}">
+      <div class="form-group">
+        <label for="role">I am a…</label>
+        <select id="role" name="role" class="form-control" required>
+          <option value="Patient">Patient</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="full_name">Full name</label>
+        <input type="text" id="full_name" name="full_name" class="form-control" required minlength="3">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" class="form-control" required minlength="5">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-control" required minlength="6">
+          <label class="show-password-label">
+            <input type="checkbox" id="showPassword"> Show password
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="text" id="phone" name="phone" class="form-control" required minlength="9" maxlength="15">
+        </div>
+      </div>
+
+      <div class="form-group" id="spec-group" style="display: none;">
+        <label for="specialization">Specialization</label>
+        <select id="specialization" name="specialization" class="form-control">
+          <option value="General">General</option>
+          <option value="Dermatology">Dermatology</option>
+          <option value="Cosmetic">Cosmetic</option>
+          <option value="Pediatrics">Pediatrics</option>
+          <option value="Cardiology">Cardiology</option>
+        </select>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Create account →</button>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="{{ url_for('login') }}">Log in</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Show / hide the Specialization field only when "Doctor" is selected.
+  function toggleSpec() {
+    const role = document.getElementById('role').value;
+    document.getElementById('spec-group').style.display =
+      (role === 'Doctor') ? 'block' : 'none';
+  }
+
+  // Show / hide the password text.
+  const passwordField = document.getElementById('password');
+  const toggle = document.getElementById('showPassword');
+  if (toggle && passwordField) {
+    toggle.addEventListener('change', function () {
+      passwordField.type = this.checked ? 'text' : 'password';
+    });
+  }
+
+  // Wire up the role dropdown and set the correct state on page load.
+  const roleSelect = document.getElementById('role');
+  if (roleSelect) {
+    roleSelect.addEventListener('change', toggleSpec);
+  }
+  toggleSpec();
+</script>
+{% endblock %}

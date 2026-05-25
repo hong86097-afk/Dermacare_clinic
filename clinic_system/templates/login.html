@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Log in · Aurelia Clinic{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Welcome back.</h1>
+    <p class="auth-subtitle">Log in to access your dashboard.</p>
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" class="form-control" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" required>
+         <input type="checkbox" id="showPassword"> Show Password
+      </div>
+      <script>
+  const passwordField = document.getElementById("password");
+  const toggle = document.getElementById("showPassword");
+
+  toggle.addEventListener("change", function() {
+    if (this.checked) {
+      passwordField.type = "text";   // show password
+    } else {
+      passwordField.type = "password"; // hide password
+    }
+  });
+</script>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Log in →</button>
+    </form>
+
+    <div class="auth-footer">
+      New here? <a href="{{ url_for('register') }}">Create an account</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

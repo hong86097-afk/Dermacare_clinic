@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Dermacare Clinic — Care that feels personal{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">Healthcare, reimagined</div>
+      <h1>Care that feels <em>personal,</em><br>treatment that's precise.</h1>
+      <p class="lead">
+        A modern clinic management platform for patients, doctors, and pharmacists.
+        Book appointments, manage prescriptions, and handle billing — all in one place.
+      </p>
+      <div class="hero-cta">
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Get Started →</a>
+        <a href="{{ url_for('doctors_list') }}" class="btn btn-outline btn-lg">Meet our doctors</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="{{ url_for('static', filename='image/clinic1.png') }}" alt="Clinic" class="hero-visual-img">
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="features-inner">
+    <div class="feature-card hc-reveal">
+      <div class="feature-num">01 / Patients</div>
+      <h3>Book in seconds.</h3>
+      <p>Find the right specialist, schedule your appointment online, and review your prescriptions whenever you need to.</p>
+    </div>
+    <div class="feature-card hc-reveal" style="--d:.1s">
+      <div class="feature-num">02 / Doctors</div>
+      <h3>Focus on what matters.</h3>
+      <p>Manage your schedule, write digital prescriptions, and track patient history all on a clean interface designed for clinicians.</p>
+    </div>
+    <div class="feature-card hc-reveal" style="--d:.2s">
+      <div class="feature-num">03 / Pharmacists</div>
+      <h3>Inventory, intelligent.</h3>
+      <p>Track medicine stock, fulfill prescriptions, and stay ahead of demand. Built-in alerts keep your pharmacy running smoothly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =====================================================
+     OUR CLINIC — minimal split: text + checkmark stats | photo
+     ===================================================== -->
+<section class="hc-about">
+  <div class="hc-about-inner">
+
+    <div class="hc-about-text hc-reveal">
+      <div class="hc-eyebrow">Our Clinic</div>
+      <h2 class="hc-about-title">A modern space<br>built for your care.</h2>
+      <p class="hc-about-lead">
+        Dermacare Clinic pairs advanced diagnostic laboratories with warm,
+        patient-focused spaces. From our consultation rooms to our in-house
+        lab, every corner is designed with your comfort and precision in mind.
+      </p>
+
+      <ul class="hc-checklist">
+        <li>
+          <span class="hc-check">✓</span>
+          <span class="hc-check-text"><strong>10+</strong> Specialist doctors</span>
+        </li>
+        <li>
+          <span class="hc-check">✓</span>
+          <span class="hc-check-text"><strong>24/7</strong> Laboratory services</span>
+        </li>
+        <li>
+          <span class="hc-check">✓</span>
+          <span class="hc-check-text"><strong>5,000+</strong> Patients cared for</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="hc-about-photo hc-reveal" style="--d:.15s">
+      <img src="{{ url_for('static', filename='image/consu.jpg') }}" alt="Consultation room">
+    </div>
+
+  </div>
+</section>
+
+<!-- Second split, image on the left this time -->
+<section class="hc-about hc-about-alt">
+  <div class="hc-about-inner">
+
+    <div class="hc-about-photo hc-reveal">
+      <img src="{{ url_for('static', filename='image/labo.jpg') }}" alt="Diagnostic laboratory">
+    </div>
+
+    <div class="hc-about-text hc-reveal" style="--d:.15s">
+      <div class="hc-eyebrow">Our Laboratory</div>
+      <h2 class="hc-about-title">Precision you<br>can rely on.</h2>
+      <p class="hc-about-lead">
+        Our in-house diagnostic laboratory delivers fast, accurate results,
+        so your doctor can act with confidence and you spend less time waiting.
+      </p>
+
+      <ul class="hc-checklist">
+        <li>
+          <span class="hc-check">✓</span>
+          <span class="hc-check-text"><strong>Same-day</strong> test results</span>
+        </li>
+        <li>
+          <span class="hc-check">✓</span>
+          <span class="hc-check-text"><strong>Certified</strong> lab technicians</span>
+        </li>
+        <li>
+          <span class="hc-check">✓</span>
+          <span class="hc-check-text"><strong>Advanced</strong> diagnostic equipment</span>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+</section>
+
+<!-- Closing CTA -->
+<section class="hc-cta hc-reveal">
+  <div class="hc-cta-inner">
+    <h2>Ready when you are.</h2>
+    <p>Create an account and book your first appointment in under a minute.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-lg hc-cta-btn">Get Started →</a>
+  </div>
+</section>
+{% endblock %}

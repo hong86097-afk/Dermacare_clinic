@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Dermacare Clinic — Care that feels personal{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">Healthcare, reimagined</div>
+      <h1>Care that feels <em>personal,</em><br>treatment that's precise.</h1>
+      <p class="lead">
+        A modern clinic management platform for patients, doctors, and pharmacists.
+        Book appointments, manage prescriptions, and handle billing — all in one place.
+      </p>
+      <div class="hero-cta">
+        <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Get Started →</a>
+        <a href="{{ url_for('doctors_list') }}" class="btn btn-outline btn-lg">Meet our doctors</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <img src="{{ url_for('static', filename='image/clinic1.png') }}" alt="Clinic" class="hero-visual-img">
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="features">
+  <div class="features-inner">
+    <div class="feature-card">
+      <div class="feature-num">01 / Patients</div>
+      <h3>Book in seconds.</h3>
+      <p>Find the right specialist, schedule your appointment online, and review your prescriptions whenever you need to.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-num">02 / Doctors</div>
+      <h3>Focus on what matters.</h3>
+      <p>Manage your schedule, write digital prescriptions, and track patient history — all on a clean interface designed for clinicians.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-num">03 / Pharmacists</div>
+      <h3>Inventory, intelligent.</h3>
+      <p>Track medicine stock, fulfill prescriptions, and stay ahead of demand. Built-in alerts keep your pharmacy running smoothly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Doctors Section -->
+{% if doctors %}
+<section class="doctors-section">
+  <div class="doctors-section-inner">
+    <div class="section-eyebrow">Our Specialists</div>
+    <div class="page-header" style="border: none; margin-bottom: 2rem;">
+      <h2>Meet the team caring for you.</h2>
+      <a href="{{ url_for('doctors_list') }}" class="btn btn-outline">View all doctors →</a>
+    </div>
+    <div class="grid-3">
+      {% for doc in doctors %}
+      <div class="doctor-card">
+        <div class="doc-avatar">{{ doc.doctorName[:1] }}</div>
+        <h3>{{ doc.doctorName }}</h3>
+        <div class="doc-spec">{{ doc.specialization }}</div>
+        <p class="text-muted" style="font-size: .9rem;">Compassionate, evidence-based care tailored to each patient.</p>
+        <div class="doc-fee">Consultation fee <strong>${{ '%.2f'|format(doc.consultationFee or 0) }}</strong></div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- About Clinic Section -->
+<section class="about-clinic">
+  <div class="about-inner">
+    <h2>About Dermacare Clinic</h2>
+    <p>
+      Dermacare Clinic is a modern healthcare center in Phnom Penh dedicated to 
+      providing personalized dermatology and general medical services. 
+      Our mission is to combine compassionate care with advanced technology 
+      to ensure every patient receives precise treatment and a seamless experience.
+    </p>
+    <p>
+      From the moment you book an appointment to the time you receive your 
+      prescription, our integrated system keeps everything simple, efficient, 
+      and patient-focused.
+    </p>
+  </div>
+</section>
+
+<!-- Laboratory Section -->
+<section class="laboratory">
+  <div class="lab-inner">
+    <h2>Our Laboratory</h2>
+    <p>
+      Our in-house laboratory is equipped with state-of-the-art diagnostic tools 
+      to support doctors in delivering evidence-based care. Patients benefit 
+      from fast, accurate results and smooth communication between clinicians 
+      and lab technicians.
+    </p>
+    <ul>
+      <li>✔ Routine blood and urine analysis</li>
+      <li>✔ Skin biopsy and pathology services</li>
+      <li>✔ Allergy and sensitivity testing</li>
+      <li>✔ Preventive health screenings</li>
+    </ul>
+    <p>
+      By integrating laboratory services directly into our clinic platform, 
+      we reduce waiting times and improve treatment outcomes.
+    </p>
+  </div>
+</section>
+
+<!-- Mission & Values Section -->
+<section class="mission">
+  <div class="mission-inner">
+    <h2>Our Mission & Values</h2>
+    <p>
+      At Dermacare, our mission is to redefine healthcare in Cambodia by 
+      combining innovation, precision, and compassion.
+    </p>
+    <div class="values-grid">
+      <div class="value-card">
+        <h3>Compassion</h3>
+        <p>We treat every patient with empathy and respect.</p>
+      </div>
+      <div class="value-card">
+        <h3>Precision</h3>
+        <p>Accurate diagnostics and evidence-based treatments.</p>
+      </div>
+      <div class="value-card">
+        <h3>Innovation</h3>
+        <p>Modern tools and digital systems for better outcomes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
