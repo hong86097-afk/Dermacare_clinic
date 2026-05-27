@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Pay · Prescription #{{ pres.prescriptionID }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 620px;">
+  <div class="page-header">
+    <div>
+      <h1>Pay your prescription.</h1>
+      <p class="subtitle">Prescription #{{ pres.prescriptionID }} · {{ pres.doctorName }}</p>
+    </div>
+    <a href="{{ url_for('prescriptions') }}" class="btn btn-ghost">← Back</a>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table class="table">
+        <thead><tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Line</th></tr></thead>
+        <tbody>
+          {% for it in items %}
+          <tr>
+            <td>{{ it.medicineName }}</td>
+            <td>{{ it.quantity }}</td>
+            <td>${{ '%.2f'|format(it.price) }}</td>
+            <td>${{ '%.2f'|format(it.lineTotal) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="d-flex justify-between align-center mt-3" style="font-size:1.3rem;">
+      <span>Total to pay</span>
+      <strong>${{ '%.2f'|format(total) }}</strong>
+    </div>
+  </div>
+
+  {% if pres.paymentStatus == 'Paid' %}
+  <div class="card text-center mt-3">
+    <span class="badge badge-paid">Paid</span>
+    <h3 class="mt-2">This prescription is paid</h3>
+    <p class="text-muted">Please collect your medicine at the pharmacy.</p>
+  </div>
+  {% else %}
+  <div class="card text-center mt-3">
+    <h3 class="mb-2">Scan to pay with your bank app</h3>
+    <div id="qrcode" style="display:flex; justify-content:center; padding:1rem;"></div>
+    <p class="text-muted">{{ payee_name }} · {{ payee_account }}</p>
+    <p style="font-size:1.4rem; margin:.5rem 0;"><strong>${{ '%.2f'|format(total) }}</strong></p>
+
+    <form method="POST" action="{{ url_for('patient_pay', pid=pres.prescriptionID) }}" class="mt-3">
+      <p class="text-muted" style="font-size:.85rem;">After paying in your bank app, tap below to confirm.</p>
+      <button type="submit" class="btn btn-primary btn-lg btn-block">I have paid</button>
+    </form>
+    <p class="text-muted mt-2" style="font-size:.8rem;">Or pay cash at the pharmacy counter.</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    const payload =
+      "Dermacare Clinic\n" +
+      "Account: {{ payee_account }}\n" +
+      "Amount: USD {{ '%.2f'|format(total) }}\n" +
+      "Ref: PRES{{ pres.prescriptionID }}";
+    new QRCode(document.getElementById("qrcode"), {
+      text: payload, width: 210, height: 210,
+      colorDark: "#0f5257", colorLight: "#ffffff"
+    });
+  </script>
+  {% endif %}
+</div>
+{% endblock %}

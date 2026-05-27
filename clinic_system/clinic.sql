@@ -167,7 +167,7 @@ SET photo_url = '/static/image/doc4.jpg'
 WHERE doctorID = 4;
 
 UPDATE Doctors
-SET photo_url = '/static/image/doc5.jpg'
+SET photo_url = '/static/image/doc12.jpg'
 WHERE doctorID = 5;
 
 UPDATE Doctors
@@ -221,11 +221,19 @@ INSERT INTO Medicines (medicineName, category, price, stock, description) VALUES
 ('Vitamin C 1000mg',  'Supplement',    8.00, 300, 'Immune support'),
 ('Cetirizine 10mg',   'Antihistamine', 4.50, 120, 'Allergy relief');
 SELECT * FROM Doctors WHERE userID = 3;
+
 -- =====================================================
--- NEXT STEPS (do these AFTER running this file)
+-- STEP 1: Database changes for the clinic payment flow
+-- Run these once in MySQL.
 -- =====================================================
--- 1. Create the admin (hashed automatically):
---        flask --app app create-admin
--- 2. Create doctors / patients / pharmacists by signing up on /register.
---    Each registration hashes the password and creates the matching
---    profile row, so every account can log in correctly.
+
+-- A prescription gets a diagnosis/description and a payment status.
+ALTER TABLE Prescriptions ADD COLUMN diagnosis TEXT AFTER appointmentID;
+ALTER TABLE Prescriptions ADD COLUMN paymentStatus ENUM('Unpaid','Paid') DEFAULT 'Unpaid';
+ALTER TABLE Prescriptions ADD COLUMN paymentMethod ENUM('Cash','QR') NULL;
+ALTER TABLE Prescriptions ADD COLUMN paidAt DATETIME NULL;
+ALTER TABLE Prescriptions ADD COLUMN dispensed TINYINT(1) DEFAULT 0;
+ALTER TABLE Prescriptions ADD COLUMN dispensedAt DATETIME NULL;
+
+
+select * from prescriptions;

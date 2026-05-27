@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Payment · Prescription #{{ pres.prescriptionID }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Prescription #{{ pres.prescriptionID }}</h1>
+      <p class="subtitle">{{ pres.patientName }} · seen by {{ pres.doctorName }}</p>
+    </div>
+    <a href="{{ url_for('pharmacy_queue') }}" class="btn btn-ghost">← Back to queue</a>
+  </div>
+
+  <div class="grid-2" style="align-items:start;">
+
+    <!-- Left: medicines + total -->
+    <div class="card">
+      {% if pres.diagnosis %}
+      <p class="text-muted mb-2"><strong>Diagnosis:</strong> {{ pres.diagnosis }}</p>
+      {% endif %}
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Line</th></tr></thead>
+          <tbody>
+            {% for it in items %}
+            <tr>
+              <td>{{ it.medicineName }}<br><span class="text-muted" style="font-size:.8rem;">{{ it.instructions }}</span></td>
+              <td>{{ it.quantity }}</td>
+              <td>${{ '%.2f'|format(it.price) }}</td>
+              <td>${{ '%.2f'|format(it.lineTotal) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex justify-between align-center mt-3" style="font-size:1.2rem;">
+        <span>Total</span>
+        <strong>${{ '%.2f'|format(total) }}</strong>
+      </div>
+    </div>
+
+    <!-- Right: payment + dispense -->
+    <div class="card text-center">
+      {% if pres.paymentStatus == 'Paid' %}
+        <span class="badge badge-paid">Paid</span>
+        <h3 class="mt-2">Payment received</h3>
+        <p class="text-muted">{{ pres.paymentMethod }} · {{ pres.paidAt }}</p>
+
+        <hr style="margin:1.25rem 0; border:none; border-top:1px solid var(--line);">
+
+        {% if pres.dispensed %}
+          <span class="badge badge-completed">Dispensed</span>
+          <p class="text-muted mt-2">Given to patient · {{ pres.dispensedAt }}</p>
+        {% else %}
+          <p class="text-muted mb-2">Payment complete. Hand medicine to the patient and dispense to update stock.</p>
+          <a href="{{ url_for('pharmacy_dispense', pid=pres.prescriptionID) }}"
+             class="btn btn-primary btn-block btn-lg">Dispense medication</a>
+        {% endif %}
+
+      {% else %}
+        <h3 class="mb-2">Scan to pay</h3>
+        <div id="qrcode" style="display:flex; justify-content:center; padding:1rem;"></div>
+        <p class="text-muted">{{ payee_name }} · {{ payee_account }}</p>
+        <p style="font-size:1.4rem; margin:.5rem 0;"><strong>${{ '%.2f'|format(total) }}</strong></p>
+
+        <div class="d-flex gap-2 mt-3" style="justify-content:center;">
+          <a href="{{ url_for('pharmacy_pay', pid=pres.prescriptionID, method='QR') }}"
+             class="btn btn-primary">Mark Paid (QR)</a>
+          <a href="{{ url_for('pharmacy_pay', pid=pres.prescriptionID, method='Cash') }}"
+             class="btn btn-outline">Mark Paid (Cash)</a>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% if pres.paymentStatus != 'Paid' %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  const payload =
+    "Dermacare Clinic\n" +
+    "Account: {{ payee_account }}\n" +
+    "Amount: USD {{ '%.2f'|format(total) }}\n" +
+    "Ref: PRES{{ pres.prescriptionID }}";
+  new QRCode(document.getElementById("qrcode"), {
+    text: payload, width: 200, height: 200,
+    colorDark: "#0f5257", colorLight: "#ffffff"
+  });
+</script>
+{% endif %}
+{% endblock %}

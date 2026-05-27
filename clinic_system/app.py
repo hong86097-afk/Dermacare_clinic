@@ -14,13 +14,15 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'change-this-in-production-please')
 
+
+
 # -----------------------------------------------------
 # Database configuration
 # -----------------------------------------------------
 DB_CONFIG = {
     'host': '127.0.0.1',
     'user': 'root',
-    'password': 'Hong9090$',       # add your root password if you set one
+    'password': 'Hong9090$',      
     'database': 'clinic',
     'port': 3306,
     'use_pure': True,              # IMPORTANT: use the pure-Python connector.
@@ -62,7 +64,7 @@ def query_db(query, args=(), fetch=True, one=False):
 
     cursor = conn.cursor(dictionary=True)
     try:
-        # Safety net: make sure args is always a clean tuple of plain values.
+       
         if args is None:
             args = ()
         elif not isinstance(args, (list, tuple)):
@@ -249,7 +251,6 @@ def login():
             session['role'] = user['roles']
             session['email'] = user['email']
 
-           
             if user['roles'] == 'Doctor':
                 row = query_db("SELECT doctorID FROM Doctors WHERE userID=%s", (user['userID'],), one=True)
                 session['profileID'] = row['doctorID'] if row else None
@@ -485,6 +486,7 @@ def book_appointment():
         appointment_date_raw = request.form['appointmentDate']
         appointment_date = parse_datetime_local(appointment_date_raw)
         reason = request.form.get('reason', '')
+        
 
         if not appointment_date:
             flash('Please choose a valid date and time for the appointment.', 'danger')
@@ -493,6 +495,18 @@ def book_appointment():
         if not session.get('profileID'):
             flash('Unable to find your patient profile. Please contact support.', 'danger')
             return redirect(url_for('dashboard'))
+        
+        # Block booking the SAME doctor on the SAME day
+        existing = query_db(
+            """SELECT appointmentID FROM Appointments
+               WHERE patientID=%s AND doctorID=%s
+               AND status='Scheduled'""",
+            (session['profileID'], doctor_id),
+            fetch=True, one=True)
+        if existing:
+            flash('You already have a scheduled appointment with this doctor. '
+                  'Please wait until it is completed before booking again.', 'warning')
+            return redirect(url_for('book_appointment'))
 
         try:
             appt_id = query_db(
@@ -532,6 +546,7 @@ def update_appointment_status(aid, new_status):
     query_db("UPDATE Appointments SET status=%s WHERE appointmentID=%s", (new_status, aid))
     flash(f'Appointment marked as {new_status}.', 'success')
     return redirect(url_for('appointments'))
+
 
 
 # -----------------------------------------------------
@@ -578,70 +593,297 @@ def delete_medicine(mid):
 # -----------------------------------------------------
 # Prescriptions
 # -----------------------------------------------------
+# Replace your OLD prescriptions() route with THIS version.
+# It no longer joins on pr.medicineID (that old column isn't used now).
+# Instead it counts the medicines from PrescriptionItems.
+
+# Replace your OLD prescriptions() route with THIS version.
+# It no longer joins on pr.medicineID (that old column isn't used now).
+# Instead it counts the medicines from PrescriptionItems.
+
 @app.route('/prescriptions')
 @login_required
 def prescriptions():
     role = session.get('role')
     if role == 'Patient':
         rows = query_db(
-            """SELECT pr.*, m.medicineName, m.category, d.doctorName,
-                      a.appointmentDate
+            """SELECT pr.prescriptionID, pr.diagnosis, pr.createdAt, pr.paymentStatus,
+                      a.appointmentDate, d.doctorName,
+                      COUNT(pi.itemID) AS medCount,
+                      COALESCE(SUM(pi.quantity*m.price),0) AS total
                FROM Prescriptions pr
-               JOIN Medicines m ON pr.medicineID=m.medicineID
                JOIN Appointments a ON pr.appointmentID=a.appointmentID
                JOIN Doctors d ON a.doctorID=d.doctorID
-               WHERE a.patientID=%s ORDER BY pr.createdAt DESC""",
-            (session['profileID'],))
+               LEFT JOIN PrescriptionItems pi ON pi.prescriptionID=pr.prescriptionID
+               LEFT JOIN Medicines m ON pi.medicineID=m.medicineID
+               WHERE a.patientID=%s GROUP BY pr.prescriptionID
+               ORDER BY pr.createdAt DESC""", (session['profileID'],))
     elif role == 'Doctor':
         rows = query_db(
-            """SELECT pr.*, m.medicineName, m.category, p.patientName,
-                      a.appointmentDate
+            """SELECT pr.prescriptionID, pr.diagnosis, pr.createdAt, pr.paymentStatus,
+                      a.appointmentDate, p.patientName,
+                      COUNT(pi.itemID) AS medCount,
+                      COALESCE(SUM(pi.quantity*m.price),0) AS total
                FROM Prescriptions pr
-               JOIN Medicines m ON pr.medicineID=m.medicineID
                JOIN Appointments a ON pr.appointmentID=a.appointmentID
                JOIN Patients p ON a.patientID=p.patientID
-               WHERE a.doctorID=%s ORDER BY pr.createdAt DESC""",
-            (session['profileID'],))
+               LEFT JOIN PrescriptionItems pi ON pi.prescriptionID=pr.prescriptionID
+               LEFT JOIN Medicines m ON pi.medicineID=m.medicineID
+               WHERE a.doctorID=%s GROUP BY pr.prescriptionID
+               ORDER BY pr.createdAt DESC""", (session['profileID'],))
     else:
         rows = query_db(
-            """SELECT pr.*, m.medicineName, m.category, p.patientName, d.doctorName,
-                      a.appointmentDate
+            """SELECT pr.prescriptionID, pr.diagnosis, pr.createdAt, pr.paymentStatus,
+                      a.appointmentDate, p.patientName, d.doctorName,
+                      COUNT(pi.itemID) AS medCount,
+                      COALESCE(SUM(pi.quantity*m.price),0) AS total
                FROM Prescriptions pr
-               JOIN Medicines m ON pr.medicineID=m.medicineID
                JOIN Appointments a ON pr.appointmentID=a.appointmentID
                JOIN Patients p ON a.patientID=p.patientID
                JOIN Doctors d ON a.doctorID=d.doctorID
-               ORDER BY pr.createdAt DESC""")
+               LEFT JOIN PrescriptionItems pi ON pi.prescriptionID=pr.prescriptionID
+               LEFT JOIN Medicines m ON pi.medicineID=m.medicineID
+               GROUP BY pr.prescriptionID ORDER BY pr.createdAt DESC""")
     return render_template('prescriptions.html', prescriptions=rows)
 
 
+# ---------------- DOCTOR: WRITE PRESCRIPTION ----------------
 @app.route('/prescriptions/add', methods=['GET', 'POST'])
 @role_required('Doctor')
 def add_prescription():
     if request.method == 'POST':
         appointment_id = request.form['appointmentID']
-        medicine_id = request.form['medicineID']
-        quantity = int(request.form.get('quantity', 1))
-        instructions = request.form.get('instructions', '')
+        diagnosis      = request.form.get('diagnosis', '').strip()
+        medicine_ids   = request.form.getlist('medicineID')
+        quantities     = request.form.getlist('quantity')
+        instructions   = request.form.getlist('instructions')
 
-        query_db(
-            """INSERT INTO Prescriptions (appointmentID, medicineID, quantity, instructions)
-               VALUES (%s,%s,%s,%s)""",
-            (appointment_id, medicine_id, quantity, instructions)
-        )
-        flash('Prescription created.', 'success')
+        if not medicine_ids:
+            flash('Add at least one medicine.', 'danger')
+            return redirect(url_for('add_prescription'))
+
+        prescription_id = query_db(
+            "INSERT INTO Prescriptions (appointmentID, diagnosis, paymentStatus) "
+            "VALUES (%s,%s,'Unpaid')", (appointment_id, diagnosis))
+
+        for i in range(len(medicine_ids)):
+            mid = medicine_ids[i]
+            qty = int(quantities[i]) if i < len(quantities) and quantities[i] else 1
+            ins = instructions[i] if i < len(instructions) else ''
+            if mid:
+                query_db(
+                    "INSERT INTO PrescriptionItems (prescriptionID, medicineID, quantity, instructions) "
+                    "VALUES (%s,%s,%s,%s)", (prescription_id, mid, qty, ins))
+
+        flash('Prescription created. Sent to pharmacy.', 'success')
         return redirect(url_for('prescriptions'))
 
     appts = query_db(
         """SELECT a.appointmentID, a.appointmentDate, p.patientName
            FROM Appointments a JOIN Patients p ON a.patientID=p.patientID
            WHERE a.doctorID=%s AND a.status IN ('Scheduled','Completed')
-           ORDER BY a.appointmentDate DESC""",
-        (session['profileID'],))
-    meds = query_db("SELECT medicineID, medicineName, price FROM Medicines")
+           ORDER BY a.appointmentDate DESC""", (session['profileID'],))
+    meds = query_db("SELECT medicineID, medicineName, price FROM Medicines ORDER BY medicineName")
     return render_template('add_prescription.html', appointments=appts, medicines=meds)
 
 
+# ---------------- HELPER: prescription detail ----------------
+def get_prescription_detail(prescription_id):
+    pres = query_db(
+        """SELECT pr.*, a.appointmentDate, a.patientID, p.patientName, d.doctorName
+           FROM Prescriptions pr
+           JOIN Appointments a ON pr.appointmentID=a.appointmentID
+           JOIN Patients p ON a.patientID=p.patientID
+           JOIN Doctors d ON a.doctorID=d.doctorID
+           WHERE pr.prescriptionID=%s""", (prescription_id,), fetch=True, one=True)
+    items = query_db(
+        """SELECT pi.quantity, pi.instructions, m.medicineName, m.price,
+                  (pi.quantity*m.price) AS lineTotal
+           FROM PrescriptionItems pi JOIN Medicines m ON pi.medicineID=m.medicineID
+           WHERE pi.prescriptionID=%s""", (prescription_id,))
+    total = sum(float(it['lineTotal']) for it in items) if items else 0.0
+    return pres, items, total
+
+
+@app.route('/patient_pay/<int:pid>', methods=['GET', 'POST'])
+@role_required('Patient')
+def patient_pay(pid):
+    pres, items, total = get_prescription_detail(pid)
+    if not pres:
+        flash('Prescription not found.', 'danger')
+        return redirect(url_for('prescriptions'))
+    if pres['patientID'] != session.get('profileID'):
+        flash('You do not have permission to view this prescription.', 'danger')
+        return redirect(url_for('prescriptions'))
+
+    if request.method == 'POST':
+        if pres['paymentStatus'] == 'Paid':
+            flash('This prescription is already paid.', 'info')
+            return redirect(url_for('patient_pay', pid=pid))
+        query_db(
+            "UPDATE Prescriptions SET paymentStatus='Paid', paymentMethod='QR', paidAt=NOW() WHERE prescriptionID=%s",
+            (pid,))
+        flash('Payment confirmed. Please collect your medicine at the pharmacy.', 'success')
+        return redirect(url_for('patient_pay', pid=pid))
+
+    payee_account = "001 234 567"
+    payee_name = "Dermacare Clinic"
+    return render_template('patient_pay.html', pres=pres, items=items, total=total,
+                           payee_account=payee_account, payee_name=payee_name)
+
+
+# ---------------- PRINTABLE PRESCRIPTION ----------------
+@app.route('/prescriptions/<int:pid>/print')
+@login_required
+def print_prescription(pid):
+    pres, items, total = get_prescription_detail(pid)
+    if not pres:
+        flash('Prescription not found.', 'danger')
+        return redirect(url_for('prescriptions'))
+    return render_template('prescription_print.html', pres=pres, items=items, total=total)
+
+
+# ---------------- PHARMACIST: QUEUE ----------------
+@app.route('/pharmacy')
+@role_required('Pharmacist', 'Admin')
+def pharmacy_queue():
+    rows = query_db(
+        """SELECT pr.prescriptionID, pr.diagnosis, pr.paymentStatus, pr.createdAt,
+                  pr.dispensed, p.patientName, d.doctorName,
+                  COALESCE(SUM(pi.quantity*m.price),0) AS total
+           FROM Prescriptions pr
+           JOIN Appointments a ON pr.appointmentID=a.appointmentID
+           JOIN Patients p ON a.patientID=p.patientID
+           JOIN Doctors d ON a.doctorID=d.doctorID
+           LEFT JOIN PrescriptionItems pi ON pi.prescriptionID=pr.prescriptionID
+           LEFT JOIN Medicines m ON pi.medicineID=m.medicineID
+           GROUP BY pr.prescriptionID ORDER BY pr.createdAt DESC""")
+    return render_template('pharmacy_queue.html', prescriptions=rows)
+
+
+# ---------------- PHARMACIST: DETAIL + PAYMENT ----------------
+@app.route('/pharmacy/<int:pid>')
+@role_required('Pharmacist', 'Admin')
+def pharmacy_detail(pid):
+    pres, items, total = get_prescription_detail(pid)
+    if not pres:
+        flash('Prescription not found.', 'danger')
+        return redirect(url_for('pharmacy_queue'))
+    payee_account = "001 234 567"          # <-- your ABA account to display
+    payee_name    = "Dermacare Clinic"
+    return render_template('pharmacy_detail.html', pres=pres, items=items, total=total,
+                           payee_account=payee_account, payee_name=payee_name)
+
+
+@app.route('/pharmacy/<int:pid>/pay/<method>')
+@role_required('Pharmacist', 'Admin')
+def pharmacy_pay(pid, method):
+    if method not in ('Cash', 'QR'):
+        flash('Invalid payment method.', 'danger')
+        return redirect(url_for('pharmacy_detail', pid=pid))
+    query_db("UPDATE Prescriptions SET paymentStatus='Paid', paymentMethod=%s, "
+             "paidAt=NOW(), pharmacistID=%s WHERE prescriptionID=%s",
+             (method, session.get('profileID'), pid))
+    flash(f'Payment received ({method}). Marked as paid.', 'success')
+    return redirect(url_for('pharmacy_detail', pid=pid))
+
+
+# ---------------- PHARMACIST: DISPENSE (reduce stock) ----------------
+@app.route('/pharmacy/<int:pid>/dispense')
+@role_required('Pharmacist', 'Admin')
+def pharmacy_dispense(pid):
+    pres, items, total = get_prescription_detail(pid)
+    if not pres:
+        flash('Prescription not found.', 'danger')
+        return redirect(url_for('pharmacy_queue'))
+    if pres['paymentStatus'] != 'Paid':
+        flash('Cannot dispense before payment is received.', 'warning')
+        return redirect(url_for('pharmacy_detail', pid=pid))
+    if pres['dispensed']:
+        flash('Already dispensed.', 'info')
+        return redirect(url_for('pharmacy_detail', pid=pid))
+
+    item_rows = query_db(
+        "SELECT pi.medicineID, pi.quantity, m.medicineName, m.stock "
+        "FROM PrescriptionItems pi JOIN Medicines m ON pi.medicineID=m.medicineID "
+        "WHERE pi.prescriptionID=%s", (pid,))
+    for it in item_rows:
+        if it['stock'] < it['quantity']:
+            flash(f"Not enough stock for {it['medicineName']} "
+                  f"(need {it['quantity']}, have {it['stock']}).", 'danger')
+            return redirect(url_for('pharmacy_detail', pid=pid))
+    for it in item_rows:
+        query_db("UPDATE Medicines SET stock=stock-%s WHERE medicineID=%s",
+                 (it['quantity'], it['medicineID']))
+    query_db("UPDATE Prescriptions SET dispensed=1, dispensedAt=NOW() WHERE prescriptionID=%s", (pid,))
+    flash('Medication dispensed. Inventory updated.', 'success')
+    return redirect(url_for('pharmacy_detail', pid=pid))
+
+
+# ---------------- DOCTOR: PATIENT HISTORY ----------------
+@app.route('/patients/<int:patient_id>/history')
+@role_required('Doctor', 'Admin')
+def patient_history(patient_id):
+    patient = query_db("SELECT * FROM Patients WHERE patientID=%s",
+                       (patient_id,), fetch=True, one=True)
+    if not patient:
+        flash('Patient not found.', 'danger')
+        return redirect(url_for('appointments'))
+    appts = query_db(
+        """SELECT a.appointmentDate, a.reason, a.status, d.doctorName, d.specialization
+           FROM Appointments a JOIN Doctors d ON a.doctorID=d.doctorID
+           WHERE a.patientID=%s ORDER BY a.appointmentDate DESC""", (patient_id,))
+    pres = query_db(
+        """SELECT pr.prescriptionID, pr.diagnosis, pr.createdAt, pr.paymentStatus,
+                  d.doctorName
+           FROM Prescriptions pr
+           JOIN Appointments a ON pr.appointmentID=a.appointmentID
+           JOIN Doctors d ON a.doctorID=d.doctorID
+           WHERE a.patientID=%s ORDER BY pr.createdAt DESC""", (patient_id,))
+    return render_template('patient_history.html', patient=patient,
+                           appointments=appts, prescriptions=pres)
+
+
+# ---------------- PATIENT: CHECK IN ----------------
+@app.route('/appointments/<int:aid>/checkin')
+@role_required('Patient')
+def appointment_checkin(aid):
+    appt = query_db("SELECT * FROM Appointments WHERE appointmentID=%s AND patientID=%s",
+                    (aid, session['profileID']), fetch=True, one=True)
+    if not appt:
+        flash('Appointment not found.', 'danger')
+        return redirect(url_for('appointments'))
+    if appt['status'] != 'Scheduled':
+        flash('Only scheduled appointments can be checked in.', 'warning')
+        return redirect(url_for('appointments'))
+    query_db("UPDATE Appointments SET checkedIn=1, checkedInAt=NOW() WHERE appointmentID=%s", (aid,))
+    flash('Checked in. Please wait to be called.', 'success')
+    return redirect(url_for('appointments'))
+
+
+# ---------------- PATIENT/ANYONE: EDIT PROFILE ----------------
+@app.route('/profile', methods=['GET', 'POST'])
+@login_required
+def edit_profile():
+    user = query_db("SELECT * FROM Users WHERE userID=%s", (session['userID'],), fetch=True, one=True)
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
+        query_db("UPDATE Users SET email=%s, phone=%s WHERE userID=%s",
+                 (email, phone, session['userID']))
+        if session.get('role') == 'Patient':
+            full_name = request.form.get('full_name', '').strip()
+            query_db("UPDATE Patients SET patientName=%s, email=%s, phone=%s WHERE userID=%s",
+                     (full_name, email, phone, session['userID']))
+        flash('Profile updated.', 'success')
+        return redirect(url_for('edit_profile'))
+    profile = None
+    if session.get('role') == 'Patient':
+        profile = query_db("SELECT * FROM Patients WHERE userID=%s",
+                           (session['userID'],), fetch=True, one=True)
+    return render_template('edit_profile.html', user=user, profile=profile)
+
+ 
 # -----------------------------------------------------
 # Invoices
 # -----------------------------------------------------

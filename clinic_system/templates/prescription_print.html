@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Prescription #{{ pres.prescriptionID }}{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 760px;">
+
+  <div class="no-print" style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+    <a href="{{ url_for('prescriptions') }}" class="btn btn-ghost">← Back</a>
+    <button onclick="window.print()" class="btn btn-primary">🖨 Print / Save PDF</button>
+  </div>
+
+  <div class="rx-paper">
+    <div class="rx-head">
+      <div>
+        <h1 class="rx-clinic">Dermacare Clinic</h1>
+        <p class="rx-sub">Medical Prescription</p>
+      </div>
+      <div class="rx-symbol">℞</div>
+    </div>
+
+    <div class="rx-meta">
+      <div><span>Prescription #</span><strong>{{ pres.prescriptionID }}</strong></div>
+      <div><span>Date</span><strong>{{ pres.createdAt }}</strong></div>
+      <div><span>Patient</span><strong>{{ pres.patientName }}</strong></div>
+      <div><span>Doctor</span><strong>{{ pres.doctorName }}</strong></div>
+    </div>
+
+    {% if pres.diagnosis %}
+    <div class="rx-diagnosis">
+      <span>Diagnosis</span>
+      <p>{{ pres.diagnosis }}</p>
+    </div>
+    {% endif %}
+
+    <table class="rx-table">
+      <thead><tr><th>Medicine</th><th>Qty</th><th>Instructions</th></tr></thead>
+      <tbody>
+        {% for it in items %}
+        <tr>
+          <td>{{ it.medicineName }}</td>
+          <td>{{ it.quantity }}</td>
+          <td>{{ it.instructions or '—' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="rx-total">
+      <span>Total payable at pharmacy</span>
+      <strong>${{ '%.2f'|format(total) }}</strong>
+    </div>
+
+    <div class="rx-sign">
+      <div class="rx-line"></div>
+      <p>{{ pres.doctorName }}</p>
+      <span>Prescribing physician</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .rx-paper { background:#fff; border:1px solid #e5e0d8; border-radius:12px; padding:2.5rem; }
+  .rx-head { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #0f5257; padding-bottom:1rem; }
+  .rx-clinic { font-family:'Fraunces',serif; color:#0f5257; margin:0; font-size:1.8rem; }
+  .rx-sub { color:#8a8378; margin:.2rem 0 0; letter-spacing:.05em; text-transform:uppercase; font-size:.75rem; }
+  .rx-symbol { font-size:2.5rem; color:#b89968; font-family:serif; }
+  .rx-meta { display:grid; grid-template-columns:1fr 1fr; gap:.6rem 2rem; margin:1.5rem 0; }
+  .rx-meta div { display:flex; flex-direction:column; }
+  .rx-meta span { font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#8a8378; }
+  .rx-meta strong { font-size:1rem; color:#1a2a2f; }
+  .rx-diagnosis { background:#f7f5f0; border-radius:8px; padding:1rem; margin-bottom:1.5rem; }
+  .rx-diagnosis span { font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#8a8378; }
+  .rx-diagnosis p { margin:.3rem 0 0; }
+  .rx-table { width:100%; border-collapse:collapse; margin-bottom:1.5rem; }
+  .rx-table th { text-align:left; font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#8a8378; border-bottom:1px solid #e5e0d8; padding:.5rem; }
+  .rx-table td { padding:.7rem .5rem; border-bottom:1px solid #f0ece4; }
+  .rx-total { display:flex; justify-content:space-between; align-items:center; background:#0f5257; color:#fff; padding:1rem 1.25rem; border-radius:8px; }
+  .rx-total strong { font-size:1.4rem; }
+  .rx-sign { margin-top:3rem; text-align:right; }
+  .rx-line { width:200px; border-top:1px solid #1a2a2f; margin-left:auto; margin-bottom:.4rem; }
+  .rx-sign p { margin:0; font-weight:600; }
+  .rx-sign span { font-size:.75rem; color:#8a8378; }
+  @media print {
+    .no-print, nav, header, footer { display:none !important; }
+    .rx-paper { border:none; padding:0; }
+  }
+</style>
+{% endblock %}

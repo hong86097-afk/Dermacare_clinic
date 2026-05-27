@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Pharmacy · Prescriptions{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <div>
+      <h1>Pharmacy queue.</h1>
+      <p class="subtitle">Collect payment from patients and dispense medication.</p>
+    </div>
+  </div>
+
+  {% if prescriptions %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Patient</th><th>Doctor</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for pr in prescriptions %}
+        <tr>
+          <td>#{{ pr.prescriptionID }}</td>
+          <td>{{ pr.patientName }}</td>
+          <td>{{ pr.doctorName }}</td>
+          <td><strong>${{ '%.2f'|format(pr.total or 0) }}</strong></td>
+          <td>
+            {% if pr.paymentStatus == 'Paid' %}
+              <span class="badge badge-paid">Paid</span>
+            {% else %}
+              <span class="badge badge-pending">Unpaid</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if pr.dispensed %}<span class="badge badge-completed">Dispensed</span>
+            {% else %}<span class="text-muted">—</span>{% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('pharmacy_detail', pid=pr.prescriptionID) }}" class="btn btn-primary btn-sm">
+              {% if pr.paymentStatus == 'Paid' %}Open{% else %}Collect payment{% endif %} →
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty card"><h3>No prescriptions assigned to you yet</h3></div>
+  {% endif %}
+</div>
+{% endblock %}

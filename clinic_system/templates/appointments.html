@@ -29,7 +29,7 @@
           <th>Specialization</th>
           <th>Reason</th>
           <th>Status</th>
-          {% if session.role in ['Doctor', 'Admin'] %}<th>Action</th>{% endif %}
+          <th>Action</th>
         </tr>
       </thead>
       <tbody>
@@ -42,16 +42,26 @@
           <td class="text-muted">{{ a.specialization }}</td>
           <td class="text-muted">{{ a.reason or '—' }}</td>
           <td><span class="badge badge-{{ a.status|lower }}">{{ a.status }}</span></td>
-          {% if session.role in ['Doctor', 'Admin'] %}
           <td>
-            {% if a.status == 'Scheduled' %}
-              <a href="{{ url_for('update_appointment_status', aid=a.appointmentID, new_status='Completed') }}" class="btn btn-success btn-sm">Complete</a>
-              <a href="{{ url_for('update_appointment_status', aid=a.appointmentID, new_status='Cancelled') }}" class="btn btn-ghost btn-sm">Cancel</a>
+            {% if session.role == 'Patient' %}
+              {% if a.status == 'Scheduled' and not a.checkedIn %}
+                <a href="{{ url_for('appointment_checkin', aid=a.appointmentID) }}" class="btn btn-primary btn-sm">Check In</a>
+              {% elif a.checkedIn %}
+                <span class="badge badge-completed">Checked In</span>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+
+            {% elif session.role in ['Doctor', 'Admin'] %}
+              <a href="{{ url_for('patient_history', patient_id=a.patientID) }}" class="btn btn-outline btn-sm">History</a>
+              {% if a.status == 'Scheduled' %}
+                <a href="{{ url_for('update_appointment_status', aid=a.appointmentID, new_status='Completed') }}" class="btn btn-success btn-sm">Complete</a>
+                <a href="{{ url_for('update_appointment_status', aid=a.appointmentID, new_status='Cancelled') }}" class="btn btn-ghost btn-sm">Cancel</a>
+              {% endif %}
             {% else %}
               <span class="text-muted">—</span>
             {% endif %}
           </td>
-          {% endif %}
         </tr>
         {% endfor %}
       </tbody>
